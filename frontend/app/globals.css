@@ -1,0 +1,361 @@
+@import "tailwindcss";
+
+/* ========================================
+   KelpFi — Underwater Theme
+   Tailwind v4 CSS-based configuration
+   ======================================== */
+
+@theme inline {
+  /* Colors — Deep Ocean */
+  --color-ocean-900: #0d1b2a;
+  --color-ocean-800: #1b2838;
+  --color-ocean-700: #0a2f23;
+  --color-ocean-600: #134e3a;
+  --color-ocean-500: #1a6b50;
+
+  /* Bioluminescent */
+  --color-cyan-glow: #00ffd5;
+  --color-cyan-soft: #00e5bf;
+  --color-cyan-dim: #00b89c;
+
+  /* Kelp Gold */
+  --color-kelp-gold: #c4a962;
+  --color-kelp-gold-light: #d4be7a;
+  --color-kelp-gold-dim: #a08a4a;
+
+  /* Coral */
+  --color-coral: #ff6b6b;
+  --color-coral-soft: #ff8a8a;
+
+  /* Glass */
+  --color-glass-light: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(0, 255, 213, 0.12);
+  --color-glass-hover: rgba(0, 255, 213, 0.08);
+
+  /* Typography */
+  --font-display: "Fredoka", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+
+  /* Animations */
+  --animate-kelp-sway: kelp-sway 6s ease-in-out infinite;
+  --animate-kelp-sway-slow: kelp-sway 8s ease-in-out infinite;
+  --animate-kelp-sway-fast: kelp-sway 4.5s ease-in-out infinite;
+  --animate-bubble-rise: bubble-rise 8s ease-in infinite;
+  --animate-bubble-rise-slow: bubble-rise 12s ease-in infinite;
+  --animate-bubble-rise-fast: bubble-rise 6s ease-in infinite;
+  --animate-float: float-gentle 4s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-lobster-idle: lobster-idle 3s ease-in-out infinite;
+  --animate-tick-up: tick-flash 0.3s ease-out;
+  --animate-wave: wave-drift 12s linear infinite;
+  --animate-shimmer: shimmer 3s ease-in-out infinite;
+}
+
+/* ========================================
+   Keyframe Animations
+   ======================================== */
+
+@keyframes kelp-sway {
+  0%, 100% { transform: rotate(-3deg) translateX(0); }
+  25% { transform: rotate(2deg) translateX(3px); }
+  50% { transform: rotate(-2deg) translateX(-2px); }
+  75% { transform: rotate(3deg) translateX(2px); }
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0.4);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(50vh) translateX(20px) scale(0.7);
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(-10px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 6px rgba(0, 255, 213, 0.3));
+    opacity: 1;
+  }
+  50% { 
+    filter: drop-shadow(0 0 20px rgba(0, 255, 213, 0.6));
+    opacity: 0.9;
+  }
+}
+
+@keyframes lobster-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-2deg); }
+  50% { transform: translateY(-1px) rotate(0deg); }
+  75% { transform: translateY(-4px) rotate(2deg); }
+}
+
+@keyframes tick-flash {
+  0% { color: #00ffd5; transform: scale(1.05); }
+  100% { color: inherit; transform: scale(1); }
+}
+
+@keyframes wave-drift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+@keyframes kelp-grow {
+  0% { transform: scaleY(0); opacity: 0; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes claw-snap {
+  0%, 80%, 100% { transform: rotate(0deg); }
+  85% { transform: rotate(-15deg); }
+  90% { transform: rotate(5deg); }
+  95% { transform: rotate(-5deg); }
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  background: #0d1b2a;
+  color: #e0f2f1;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Background gradient for entire app */
+.ocean-bg {
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(10, 47, 35, 0.6) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(19, 78, 58, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(0, 229, 191, 0.05) 0%, transparent 40%),
+    linear-gradient(180deg, #0d1b2a 0%, #1b2838 40%, #0a2f23 100%);
+  min-height: 100vh;
+}
+
+/* ========================================
+   Glass Morphism
+   ======================================== */
+
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(0, 255, 213, 0.03) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 213, 0.1);
+  border-radius: 20px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(0, 255, 213, 0.05) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  border-color: rgba(0, 255, 213, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 255, 213, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.glass-card-static {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(0, 255, 213, 0.02) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 255, 213, 0.08);
+  border-radius: 16px;
+}
+
+/* ========================================
+   Buttons
+   ======================================== */
+
+.btn-primary {
+  background: linear-gradient(135deg, #00ffd5, #00b89c);
+  color: #0d1b2a;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 255, 213, 0.3);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-secondary {
+  background: rgba(0, 255, 213, 0.1);
+  color: #00ffd5;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 213, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(0, 255, 213, 0.18);
+  border-color: rgba(0, 255, 213, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-harvest {
+  background: linear-gradient(135deg, #c4a962, #d4be7a);
+  color: #0d1b2a;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-harvest:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(196, 169, 98, 0.35);
+}
+
+.btn-harvest:hover .harvest-icon {
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 8px rgba(196, 169, 98, 0.6));
+}
+
+/* ========================================
+   Scrollbar
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d1b2a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 213, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 213, 0.35);
+}
+
+/* ========================================
+   Utility animations
+   ======================================== */
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-fade-in-up-delay-1 {
+  animation: fade-in-up 0.8s ease-out 0.15s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-2 {
+  animation: fade-in-up 0.8s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-3 {
+  animation: fade-in-up 0.8s ease-out 0.45s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-4 {
+  animation: fade-in-up 0.8s ease-out 0.6s forwards;
+  opacity: 0;
+}
+
+/* Progress bar */
+.progress-bar-glow {
+  box-shadow: 0 0 12px rgba(0, 255, 213, 0.4);
+}
+
+/* Number glow */
+.number-glow {
+  text-shadow: 0 0 20px rgba(0, 255, 213, 0.4);
+}
+
+/* Hero gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #00ffd5, #c4a962);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ocean floor gradient */
+.ocean-floor-gradient {
+  background: linear-gradient(180deg, transparent 0%, rgba(10, 47, 35, 0.3) 100%);
+}

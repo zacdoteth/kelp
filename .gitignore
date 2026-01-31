@@ -1,0 +1,9 @@
+node_modules/
+.next/
+cache/
+artifacts/
+typechain-types/
+coverage/
+*.log
+.env
+.env.local

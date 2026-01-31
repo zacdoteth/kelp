@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KelpFi — Grow Your Kelp 🌿",
+  title: "kelp.markets — Grow Your Kelp 🌿",
   description: "The yield forest of the Molt ecosystem. Stake MOLT. Grow kelp. This is the circle of life.",
   icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" },
 };

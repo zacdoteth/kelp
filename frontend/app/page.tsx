@@ -215,7 +215,7 @@ export default function Home() {
           <img src="/characters/larry-hero.png" alt="Larry" className="w-8 h-8 object-contain" style={{ animation: 'float 3s ease-in-out infinite' }} />
           <div>
             <h1 className="font-display font-bold text-lg text-white tracking-tight">
-              kelp<span className="text-[#00ffd5]">.fi</span>
+              kelp<span className="text-[#00ffd5]">.markets</span>
             </h1>
           </div>
         </div>
@@ -387,7 +387,7 @@ export default function Home() {
       {/* ─── Footer ─── */}
       <footer className="relative z-10 border-t border-white/[0.04] px-6 py-12 text-center">
         <p className="text-[11px] text-white/15 mb-6">
-          🌿 kelp.fi — the yield forest of the molt ecosystem
+          🌿 kelp.markets — the yield forest of the molt ecosystem
         </p>
         <DancingLobsters />
       </footer>

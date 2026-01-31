@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import DancingLobsters from "./components/DancingLobsters";
+import LobsterParade from "./components/LobsterParade";
 
 const OceanScene = dynamic(() => import("./components/OceanScene"), {
   ssr: false,
@@ -59,9 +61,9 @@ function LiveAPY({ base, volatility = 0.3 }: { base: number; volatility?: number
 }
 
 // ─── Premium Pool Card ───
-function PoolCard({ name, icon, token, baseApy, tvl, staked, earned, emissions, color, delay }: {
+function PoolCard({ name, icon, token, baseApy, tvl, staked, earned, emissions, color, delay, molts, larryImg }: {
   name: string; icon: string; token: string; baseApy: number; tvl: string;
-  staked: string; earned: string; emissions: string; color: string; delay: string;
+  staked: string; earned: string; emissions: string; color: string; delay: string; molts: number; larryImg?: string;
 }) {
   return (
     <div
@@ -88,11 +90,15 @@ function PoolCard({ name, icon, token, baseApy, tvl, staked, earned, emissions, 
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl
+              className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden
                           group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
               style={{ background: `linear-gradient(135deg, ${color}15, ${color}08)`, border: `1px solid ${color}25` }}
             >
-              {icon}
+              {larryImg ? (
+                <img src={larryImg} alt={name} className="w-10 h-10 object-contain" />
+              ) : (
+                <span className="text-2xl">{icon}</span>
+              )}
             </div>
             <div>
               <h3 className="font-display font-semibold text-[19px] text-white tracking-tight">{name}</h3>
@@ -109,6 +115,24 @@ function PoolCard({ name, icon, token, baseApy, tvl, staked, earned, emissions, 
             </div>
             <p className="text-[10px] text-white/25 mt-1.5 uppercase tracking-widest">APY</p>
           </div>
+        </div>
+
+        {/* Active molts */}
+        <div className="flex items-center gap-2 mb-5 px-3 py-2 rounded-xl bg-white/[0.02]">
+          <div className="flex -space-x-1">
+            {Array.from({ length: Math.min(5, molts) }, (_, i) => (
+              <span
+                key={i}
+                className="inline-block text-[11px]"
+                style={{
+                  animation: `lobsterBounce ${0.5 + i * 0.1}s ease-in-out ${i * 0.1}s infinite`,
+                }}
+              >
+                🦞
+              </span>
+            ))}
+          </div>
+          <span className="text-[11px] text-white/30 font-mono">{molts} molts farming</span>
         </div>
 
         {/* Stats Grid */}
@@ -176,12 +200,19 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen">
+      <style>{`
+        @keyframes lobsterBounce {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          30% { transform: translateY(-6px) rotate(-5deg); }
+          60% { transform: translateY(0) rotate(5deg); }
+        }
+      `}</style>
       <OceanScene />
 
       {/* ─── Header ─── */}
       <header className="relative z-10 flex items-center justify-between px-6 md:px-10 py-5">
         <div className="flex items-center gap-3">
-          <span className="text-2xl" style={{ animation: 'float 3s ease-in-out infinite' }}>🌿</span>
+          <img src="/characters/larry-hero.png" alt="Larry" className="w-8 h-8 object-contain" style={{ animation: 'float 3s ease-in-out infinite' }} />
           <div>
             <h1 className="font-display font-bold text-lg text-white tracking-tight">
               kelp<span className="text-[#00ffd5]">.fi</span>
@@ -205,6 +236,11 @@ export default function Home() {
 
       {/* ─── Hero ─── */}
       <section className="relative z-10 flex flex-col items-center text-center px-6 pt-16 md:pt-24 pb-14">
+        {/* Larry mascot */}
+        <div className="mb-6" style={{ animation: 'float 3s ease-in-out infinite' }}>
+          <img src="/characters/larry-hero.png" alt="Larry the Lobster" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_0_20px_rgba(0,255,213,0.3)]" />
+        </div>
+
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] mb-8">
           <div className="w-1.5 h-1.5 rounded-full bg-[#00ffd5] animate-pulse" />
           <span className="text-[12px] text-white/40 font-medium">Live on Base</span>
@@ -289,6 +325,8 @@ export default function Home() {
             emissions="60%"
             color="#00ffd5"
             delay="0s"
+            molts={847}
+            larryImg="/characters/larry-staking.png"
           />
           <PoolCard
             name="The Reef"
@@ -301,6 +339,8 @@ export default function Home() {
             emissions="40%"
             color="#ff6b6b"
             delay="0.1s"
+            molts={400}
+            larryImg="/characters/larry-dancing.png"
           />
         </div>
 
@@ -336,11 +376,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── Dancing Lobsters ─── */}
+      <section className="relative z-10 px-6 pb-16 max-w-3xl mx-auto text-center">
+        <DancingLobsters />
+      </section>
+
+      {/* ─── Lobster Parade ─── */}
+      <LobsterParade />
+
       {/* ─── Footer ─── */}
-      <footer className="relative z-10 border-t border-white/[0.04] px-6 py-8 text-center">
-        <p className="text-[11px] text-white/15">
+      <footer className="relative z-10 border-t border-white/[0.04] px-6 py-12 text-center">
+        <p className="text-[11px] text-white/15 mb-6">
           🌿 kelp.fi — the yield forest of the molt ecosystem
         </p>
+        <DancingLobsters />
       </footer>
     </div>
   );

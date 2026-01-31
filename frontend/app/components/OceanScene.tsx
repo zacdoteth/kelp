@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -120,7 +120,7 @@ function Caustics() {
 }
 
 // ─── Floating Particles (plankton/sediment) ───
-function Particles({ count = 200 }: { count?: number }) {
+function Particles({ count = 80 }: { count?: number }) {
   const ref = useRef<THREE.Points>(null);
 
   const { positions, speeds, offsets } = useMemo(() => {
@@ -197,7 +197,7 @@ function KelpStrand({ position, height = 4, color = "#16a34a" }: {
 
   return (
     <mesh ref={meshRef} position={position}>
-      <planeGeometry args={[0.3, height, 1, 32]} />
+      <planeGeometry args={[0.3, height, 1, 16]} />
       <shaderMaterial
         ref={mat}
         transparent
@@ -249,7 +249,7 @@ function KelpForest() {
   const strands = useMemo(() => {
     const s: { pos: [number, number, number]; h: number; color: string }[] = [];
     const colors = ["#16a34a", "#22c55e", "#15803d", "#0d9448", "#1a8a50"];
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 10; i++) {
       const x = (Math.random() - 0.5) * 24;
       const z = -3 - Math.random() * 12;
       const h = 2 + Math.random() * 5;
@@ -272,7 +272,7 @@ function KelpForest() {
 }
 
 // ─── Bubbles (3D spheres rising) ───
-function Bubbles3D({ count = 30 }: { count?: number }) {
+function Bubbles3D({ count = 15 }: { count?: number }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const data = useMemo(() => {
@@ -306,7 +306,7 @@ function Bubbles3D({ count = 30 }: { count?: number }) {
 
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, count]}>
-      <sphereGeometry args={[1, 8, 8]} />
+      <sphereGeometry args={[1, 6, 6]} />
       <meshPhysicalMaterial
         color="#00ffd5"
         transparent
@@ -359,10 +359,22 @@ function Scene() {
 
       <GodRays />
       <Caustics />
-      <Particles count={150} />
+      <Particles count={80} />
       <KelpForest />
-      <Bubbles3D count={25} />
+      <Bubbles3D count={15} />
     </>
+  );
+}
+
+// ─── Loading Screen ───
+function LoadingScreen() {
+  return (
+    <div className="fixed inset-0 z-0 bg-[#040d0a] flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-4xl mb-3 animate-bounce">🌿</div>
+        <div className="text-[#00ffd5]/40 text-sm font-mono">diving deeper...</div>
+      </div>
+    </div>
   );
 }
 
@@ -370,18 +382,23 @@ function Scene() {
 export default function OceanScene() {
   return (
     <div className="fixed inset-0 z-0">
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 60, near: 0.1, far: 100 }}
-        dpr={[1, 1.5]}
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance",
-        }}
-        style={{ background: "#040d0a" }}
-      >
-        <Scene />
-      </Canvas>
+      <Suspense fallback={<LoadingScreen />}>
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 60, near: 0.1, far: 100 }}
+          dpr={[1, typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 1.5]}
+          gl={{
+            antialias: false,
+            alpha: false,
+            powerPreference: "high-performance",
+            stencil: false,
+            depth: true,
+          }}
+          style={{ background: "#040d0a" }}
+          frameloop="always"
+        >
+          <Scene />
+        </Canvas>
+      </Suspense>
     </div>
   );
 }

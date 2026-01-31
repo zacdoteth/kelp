@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 const OceanScene = dynamic(() => import("./components/OceanScene"), {
   ssr: false,
-  loading: () => <div className="fixed inset-0 bg-ocean-950 z-0" />,
+  loading: () => (
+    <div className="fixed inset-0 bg-[#040d0a] z-0 flex items-center justify-center">
+      <div className="text-4xl animate-bounce">🌿</div>
+    </div>
+  ),
 });
 
 // ─── Animated Counter ───
@@ -27,67 +31,140 @@ function AnimCounter({ end, decimals = 0, prefix = "", suffix = "", duration = 2
   return <span>{prefix}{val.toFixed(decimals)}{suffix}</span>;
 }
 
-// ─── Live Kelp Counter (ticks up) ───
+// ─── Live KELP Counter ───
 function LiveCounter({ rate = 0.0042 }: { rate?: number }) {
   const [val, setVal] = useState(0);
   useEffect(() => {
     const i = setInterval(() => setVal(v => v + rate), 100);
     return () => clearInterval(i);
   }, [rate]);
-  return <span className="font-mono text-bio-cyan stat-value">{val.toFixed(6)}</span>;
+  return <span className="font-mono">{val.toFixed(6)}</span>;
 }
 
-// ─── Pool Card ───
-function PoolCard({ name, icon, token, apy, tvl, staked, earned, emissions }: {
-  name: string; icon: string; token: string; apy: string; tvl: string;
-  staked: string; earned: string; emissions: string;
+// ─── Live APY (fluctuates realistically) ───
+function LiveAPY({ base, volatility = 0.3 }: { base: number; volatility?: number }) {
+  const [apy, setApy] = useState(base);
+  useEffect(() => {
+    const i = setInterval(() => {
+      setApy(prev => {
+        // Mean-reverting random walk — bounces around base
+        const drift = (base - prev) * 0.02;
+        const noise = (Math.random() - 0.5) * base * volatility * 0.01;
+        return Math.max(base * 0.7, prev + drift + noise);
+      });
+    }, 800 + Math.random() * 400);
+    return () => clearInterval(i);
+  }, [base, volatility]);
+  return <span className="font-mono font-bold text-xl tabular-nums">{apy.toLocaleString(undefined, { maximumFractionDigits: 0 })}%</span>;
+}
+
+// ─── Premium Pool Card ───
+function PoolCard({ name, icon, token, baseApy, tvl, staked, earned, emissions, color, delay }: {
+  name: string; icon: string; token: string; baseApy: number; tvl: string;
+  staked: string; earned: string; emissions: string; color: string; delay: string;
 }) {
   return (
-    <div className="glass-card p-6 group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-ocean-800 flex items-center justify-center text-2xl
-                          group-hover:scale-110 transition-transform duration-300">
-            {icon}
-          </div>
-          <div>
-            <h3 className="font-display font-semibold text-lg text-white">{name}</h3>
-            <p className="text-sm text-bio-green/60">{token}</p>
-          </div>
-        </div>
-        <div className="apy-badge bg-ocean-800 px-3 py-1.5 rounded-lg">
-          <p className="text-xs text-bio-green/60">APY</p>
-          <p className="font-mono font-bold text-bio-cyan text-lg">{apy}</p>
-        </div>
-      </div>
+    <div
+      className="group relative rounded-2xl p-[1px] transition-all duration-500 hover:scale-[1.02]"
+      style={{
+        background: `linear-gradient(135deg, ${color}33, transparent 50%, ${color}22)`,
+        animationDelay: delay,
+      }}
+    >
+      {/* Glow effect on hover */}
+      <div
+        className="absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+        style={{ background: `radial-gradient(circle, ${color}20, transparent 70%)` }}
+      />
 
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-ocean-900/50 rounded-lg p-3">
-          <p className="text-xs text-bio-green/40 mb-1">TVL</p>
-          <p className="font-mono text-sm text-white">{tvl}</p>
-        </div>
-        <div className="bg-ocean-900/50 rounded-lg p-3">
-          <p className="text-xs text-bio-green/40 mb-1">Your Stake</p>
-          <p className="font-mono text-sm text-white">{staked}</p>
-        </div>
-        <div className="bg-ocean-900/50 rounded-lg p-3">
-          <p className="text-xs text-bio-green/40 mb-1">Kelp Earned</p>
-          <p className="font-mono text-sm text-bio-cyan">{earned}</p>
-        </div>
-        <div className="bg-ocean-900/50 rounded-lg p-3">
-          <p className="text-xs text-bio-green/40 mb-1">Share</p>
-          <p className="font-mono text-sm text-white">{emissions}</p>
-        </div>
-      </div>
+      <div className="relative rounded-2xl bg-[#060f0b]/90 backdrop-blur-xl p-7 overflow-hidden">
+        {/* Subtle top gradient line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-[1px] opacity-60"
+          style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
+        />
 
-      <div className="flex gap-2">
-        <button className="glow-btn flex-1 text-sm font-display">Stake</button>
-        <button className="flex-1 text-sm font-display font-semibold py-3 px-4 rounded-xl
-                           bg-ocean-800 text-bio-green border border-bio-green/20
-                           hover:border-bio-green/40 hover:bg-ocean-700 transition-all">
-          Harvest 🌿
-        </button>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl
+                          group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
+              style={{ background: `linear-gradient(135deg, ${color}15, ${color}08)`, border: `1px solid ${color}25` }}
+            >
+              {icon}
+            </div>
+            <div>
+              <h3 className="font-display font-semibold text-[19px] text-white tracking-tight">{name}</h3>
+              <p className="text-[13px] text-white/35 mt-0.5">{token}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl"
+              style={{ background: `linear-gradient(135deg, ${color}12, ${color}06)`, border: `1px solid ${color}18` }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+              <span style={{ color }}><LiveAPY base={baseApy} /></span>
+            </div>
+            <p className="text-[10px] text-white/25 mt-1.5 uppercase tracking-widest">APY</p>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {[
+            { label: "Total Value Locked", value: tvl, accent: false },
+            { label: "Your Stake", value: staked, accent: false },
+            { label: "Kelp Earned", value: earned, accent: true },
+            { label: "Emission Share", value: emissions, accent: false },
+          ].map((s, i) => (
+            <div key={i} className="rounded-xl bg-white/[0.03] border border-white/[0.04] p-3.5 hover:bg-white/[0.05] transition-colors">
+              <p className="text-[10px] text-white/25 uppercase tracking-wider mb-1.5">{s.label}</p>
+              <p className={`font-mono text-[15px] font-medium ${s.accent ? 'text-[#00ffd5]' : 'text-white/80'}`}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            className="flex-1 relative group/btn overflow-hidden rounded-xl py-3.5 px-5 font-display font-semibold text-[15px]
+                       transition-all duration-300 hover:shadow-lg active:scale-[0.98]"
+            style={{
+              background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+              color: '#040d0a',
+              boxShadow: `0 4px 20px ${color}30`,
+            }}
+          >
+            <span className="relative z-10">Stake</span>
+            <div
+              className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"
+              style={{ background: `linear-gradient(135deg, ${color}ee, ${color})` }}
+            />
+          </button>
+          <button
+            className="flex-1 relative overflow-hidden rounded-xl py-3.5 px-5 font-display font-semibold text-[15px]
+                       border transition-all duration-300 hover:bg-white/[0.06] active:scale-[0.98] group/harvest"
+            style={{ borderColor: `${color}25`, color: `${color}cc` }}
+          >
+            <span className="inline-block group-hover/harvest:scale-110 group-hover/harvest:rotate-12 transition-transform duration-300">🌿</span>
+            {" "}Harvest
+          </button>
+        </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Stat Pill ───
+function StatPill({ label, value, color = "#00ffd5" }: { label: string; value: React.ReactNode; color?: string }) {
+  return (
+    <div className="text-center px-5">
+      <p className="font-mono text-2xl md:text-3xl font-bold" style={{ color, textShadow: `0 0 30px ${color}40` }}>
+        {value}
+      </p>
+      <p className="text-[11px] text-white/25 mt-1.5 uppercase tracking-widest">{label}</p>
     </div>
   );
 }
@@ -102,182 +179,167 @@ export default function Home() {
       <OceanScene />
 
       {/* ─── Header ─── */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-bio-green/10">
+      <header className="relative z-10 flex items-center justify-between px-6 md:px-10 py-5">
         <div className="flex items-center gap-3">
-          <span className="text-3xl" style={{ animation: 'float 3s ease-in-out infinite' }}>🌿</span>
+          <span className="text-2xl" style={{ animation: 'float 3s ease-in-out infinite' }}>🌿</span>
           <div>
-            <h1 className="font-display font-bold text-xl text-white">
-              kelp<span className="text-bio-cyan">.markets</span>
+            <h1 className="font-display font-bold text-lg text-white tracking-tight">
+              kelp<span className="text-[#00ffd5]">.fi</span>
             </h1>
-            <p className="text-[10px] text-bio-green/40 tracking-widest uppercase">the yield forest</p>
           </div>
         </div>
-        <nav className="hidden md:flex items-center gap-6 text-sm text-bio-green/60">
-          <a href="#pools" className="hover:text-bio-cyan transition-colors">Pools</a>
-          <a href="#" className="hover:text-bio-cyan transition-colors">Treasury</a>
-          <a href="#" className="hover:text-bio-cyan transition-colors">Docs</a>
+        <nav className="hidden md:flex items-center gap-8 text-[13px] text-white/30 font-medium">
+          <a href="#pools" className="hover:text-white/70 transition-colors duration-300">Pools</a>
+          <a href="#" className="hover:text-white/70 transition-colors duration-300">Treasury</a>
+          <a href="#" className="hover:text-white/70 transition-colors duration-300">Docs</a>
         </nav>
-        <button className="glow-btn text-sm font-display">
-          🦞 Connect Wallet
+        <button className="relative group overflow-hidden rounded-xl py-2.5 px-5 font-display font-semibold text-[13px] text-[#040d0a]
+                           bg-gradient-to-r from-[#00ffd5] to-[#00e5a0] transition-all duration-300
+                           hover:shadow-[0_4px_24px_rgba(0,255,213,0.3)] active:scale-[0.97]">
+          <span className="relative z-10 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#040d0a]/30" />
+            Connect
+          </span>
         </button>
       </header>
 
       {/* ─── Hero ─── */}
-      <section className="relative z-10 flex flex-col items-center text-center px-6 pt-20 pb-16">
-        {/* Lobster mascot */}
-        <div className="text-6xl mb-6" style={{ animation: 'float 3s ease-in-out infinite' }}>
-          🦞
+      <section className="relative z-10 flex flex-col items-center text-center px-6 pt-16 md:pt-24 pb-14">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] mb-8">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#00ffd5] animate-pulse" />
+          <span className="text-[12px] text-white/40 font-medium">Live on Base</span>
         </div>
 
-        <h2 className="font-display font-bold text-5xl md:text-6xl text-white mb-4 leading-tight">
-          Grow Your <span className="text-bio-cyan">Kelp</span>
+        <h2 className="font-display font-bold text-5xl md:text-7xl text-white mb-5 leading-[1.1] tracking-tight">
+          Grow Your<br />
+          <span className="bg-gradient-to-r from-[#00ffd5] to-[#00e5a0] bg-clip-text text-transparent">Kelp</span>
         </h2>
-        <p className="font-body text-lg text-bio-green/60 max-w-lg mb-3">
-          Stake MOLT. Earn KELP. Treasury buys MOLT. The circle of life.
+        <p className="font-body text-lg md:text-xl text-white/30 max-w-md mb-4 leading-relaxed">
+          Stake MOLT. Earn KELP. Treasury buys MOLT.<br />
+          <span className="text-white/50">The circle of life.</span>
         </p>
-        <p className="text-xs text-bio-green/30 mb-10 italic">
-          This protocol has no value. It is a yield farming experiment for lobsters.
+        <p className="text-[11px] text-white/15 mb-12 italic">
+          Experimental yield farming for lobsters. Not financial advice.
         </p>
 
-        {/* Stats bar */}
+        {/* Stats */}
         {mounted && (
-          <div className="flex flex-wrap items-center justify-center gap-8 mb-12">
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-bio-cyan stat-value">
-                <AnimCounter end={2.47} decimals={2} prefix="$" suffix="M" />
-              </p>
-              <p className="text-xs text-bio-green/40 mt-1">Total Kelp Growing</p>
-            </div>
-            <div className="w-px h-10 bg-bio-green/10" />
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-bio-cyan stat-value">
-                <AnimCounter end={1247} prefix="" suffix="" />
-              </p>
-              <p className="text-xs text-bio-green/40 mt-1">Molts Farming</p>
-            </div>
-            <div className="w-px h-10 bg-bio-green/10" />
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-coral-500">
-                <AnimCounter end={42069} suffix="%" />
-              </p>
-              <p className="text-xs text-bio-green/40 mt-1">Top APY</p>
-            </div>
-            <div className="w-px h-10 bg-bio-green/10" />
-            <div className="text-center">
-              <p className="font-mono text-2xl font-bold text-sand-400">
-                <AnimCounter end={847} prefix="$" suffix="K" />
-              </p>
-              <p className="text-xs text-bio-green/40 mt-1">MOLT Bought by Treasury</p>
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
+            <div className="flex items-center gap-6 md:gap-8 px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm">
+              <StatPill label="Total Kelp Growing" value={<AnimCounter end={2.47} decimals={2} prefix="$" suffix="M" />} />
+              <div className="w-px h-10 bg-white/[0.06]" />
+              <StatPill label="Molts Farming" value={<AnimCounter end={1247} />} />
+              <div className="w-px h-10 bg-white/[0.06] hidden md:block" />
+              <div className="hidden md:block">
+                <StatPill label="MOLT Bought" value={<AnimCounter end={847} prefix="$" suffix="K" />} color="#c4a962" />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Halving countdown */}
-        <div className="glass-card px-6 py-4 flex items-center gap-4 mb-6">
-          <div className="w-2 h-2 bg-coral-500 rounded-full animate-pulse" />
-          <div>
-            <p className="text-xs text-bio-green/40">Next Halving — Emissions Drop 50%</p>
-            <p className="font-mono text-sm text-coral-500 font-bold">6d 14h 23m 17s</p>
+        {/* Halving Countdown */}
+        <div className="inline-flex items-center gap-5 px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm mb-8">
+          <div className="flex items-center gap-2.5">
+            <div className="w-2 h-2 bg-[#ff6b6b] rounded-full animate-pulse" />
+            <div className="text-left">
+              <p className="text-[10px] text-white/25 uppercase tracking-wider">Next Halving</p>
+              <p className="font-mono text-[15px] text-[#ff6b6b] font-bold tracking-tight">6d 14h 23m</p>
+            </div>
           </div>
-          <div className="flex-1 h-2 bg-ocean-800 rounded-full overflow-hidden ml-4 min-w-[120px]">
-            <div className="h-full bg-gradient-to-r from-bio-green to-bio-cyan rounded-full relative" style={{ width: '35%' }}>
+          <div className="w-32 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="h-full rounded-full relative overflow-hidden" style={{ width: '35%', background: 'linear-gradient(90deg, #ff6b6b, #ff8a80)' }}>
               <div className="absolute inset-0 shimmer-bar rounded-full" />
             </div>
           </div>
         </div>
 
-        {/* Your earnings */}
+        {/* Live Earnings */}
         {mounted && (
-          <div className="glass-card px-8 py-5 text-center">
-            <p className="text-xs text-bio-green/40 mb-2">Your Kelp Growing Right Now</p>
-            <div className="text-3xl font-mono font-bold">
-              <LiveCounter rate={0.000042} /> <span className="text-bio-green/40 text-lg">KELP</span>
+          <div className="inline-flex flex-col items-center px-8 py-5 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm">
+            <p className="text-[10px] text-white/20 uppercase tracking-widest mb-2">Your Kelp Growing</p>
+            <div className="text-3xl font-bold text-[#00ffd5]" style={{ textShadow: '0 0 30px rgba(0,255,213,0.3)' }}>
+              <LiveCounter rate={0.000042} /> <span className="text-white/20 text-base font-normal">KELP</span>
             </div>
           </div>
         )}
       </section>
 
       {/* ─── Pools ─── */}
-      <section id="pools" className="relative z-10 px-6 pb-20 max-w-5xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
-          <h2 className="font-display font-bold text-2xl text-white">The Ocean Floor</h2>
-          <span className="text-xs text-bio-green/30 bg-ocean-800 px-2 py-1 rounded-md">4 pools</span>
+      <section id="pools" className="relative z-10 px-6 pb-20 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="font-display font-bold text-2xl text-white tracking-tight">The Ocean Floor</h2>
+            <p className="text-[13px] text-white/25 mt-1">Choose your depth</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#00ffd5]" />
+            <span className="text-[12px] text-white/30 font-mono">2 pools</span>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-5">
+        <div className="grid md:grid-cols-2 gap-6">
           <PoolCard
             name="The Deep"
             icon="🌊"
             token="Stake MOLT → earn KELP"
-            apy="42,069%"
+            baseApy={42069}
             tvl="$1.2M"
             staked="0 MOLT"
             earned="0.000000"
-            emissions="40%"
+            emissions="60%"
+            color="#00ffd5"
+            delay="0s"
           />
           <PoolCard
             name="The Reef"
             icon="🪸"
             token="Stake MOLT/WETH LP → earn KELP"
-            apy="28,420%"
+            baseApy={28420}
             tvl="$840K"
             staked="0 LP"
             earned="0.000000"
-            emissions="35%"
+            emissions="40%"
+            color="#ff6b6b"
+            delay="0.1s"
           />
-          <PoolCard
-            name="The Nursery"
-            icon="🌿"
-            token="Stake KELP/WETH LP → earn KELP"
-            apy="6,969%"
-            tvl="$320K"
-            staked="0 LP"
-            earned="0.000000"
-            emissions="20%"
-          />
-          <PoolCard
-            name="The Tide Pool"
-            icon="🦞"
-            token="Stake Agent Tokens → earn KELP"
-            apy="1,337%"
-            tvl="$87K"
-            staked="0"
-            earned="0.000000"
-            emissions="5%"
-          />
+        </div>
+
+        {/* Coming Soon teaser */}
+        <div className="mt-6 flex items-center justify-center gap-3 py-4 rounded-2xl border border-dashed border-white/[0.06]">
+          <span className="text-white/15 text-[13px]">🌿 More pools unlocking soon...</span>
         </div>
       </section>
 
       {/* ─── How It Works ─── */}
-      <section className="relative z-10 px-6 pb-20 max-w-3xl mx-auto text-center">
-        <h2 className="font-display font-bold text-2xl text-white mb-8">How Kelp Grows</h2>
-        <div className="flex flex-col md:flex-row items-center gap-4">
+      <section className="relative z-10 px-6 pb-20 max-w-3xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-0">
           {[
-            { icon: "🦞", title: "Stake MOLT", desc: "Deposit your MOLT into the forest" },
-            { icon: "🌿", title: "Kelp Grows", desc: "Earn KELP every block, automatically" },
-            { icon: "🔄", title: "Treasury Buys", desc: "2% of harvests auto-buy MOLT" },
-            { icon: "📈", title: "MOLT Goes Up", desc: "Constant buy pressure on MOLT" },
+            { icon: "🦞", title: "Stake MOLT", desc: "Deposit into the forest" },
+            { icon: "🌿", title: "Kelp Grows", desc: "Earn KELP every block" },
+            { icon: "🔄", title: "Treasury Buys", desc: "2% fee auto-buys MOLT" },
+            { icon: "📈", title: "MOLT Goes Up", desc: "Perpetual buy pressure" },
           ].map((step, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-2xl bg-ocean-800 flex items-center justify-center text-3xl mb-3
-                              hover:scale-110 transition-transform cursor-default">
-                {step.icon}
+            <div key={i} className="flex items-center">
+              <div className="flex flex-col items-center group cursor-default">
+                <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-2xl mb-2.5
+                                group-hover:scale-110 group-hover:bg-white/[0.07] transition-all duration-300">
+                  {step.icon}
+                </div>
+                <p className="font-display font-semibold text-[13px] text-white/80">{step.title}</p>
+                <p className="text-[11px] text-white/20 mt-0.5 max-w-[110px] text-center">{step.desc}</p>
               </div>
-              <p className="font-display font-semibold text-sm text-white">{step.title}</p>
-              <p className="text-xs text-bio-green/40 mt-1 max-w-[140px]">{step.desc}</p>
-              {i < 3 && <div className="hidden md:block text-bio-green/20 text-2xl mt-2">→</div>}
+              {i < 3 && (
+                <div className="hidden md:block mx-5 text-white/10 text-lg">→</div>
+              )}
             </div>
           ))}
         </div>
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="relative z-10 border-t border-bio-green/10 px-6 py-8 text-center">
-        <p className="text-xs text-bio-green/30">
-          🌿 kelp.markets — the yield forest of the molt ecosystem
-        </p>
-        <p className="text-[10px] text-bio-green/20 mt-2">
-          This token has no value. We are lobsters, not financial advisors. 🦞
+      <footer className="relative z-10 border-t border-white/[0.04] px-6 py-8 text-center">
+        <p className="text-[11px] text-white/15">
+          🌿 kelp.fi — the yield forest of the molt ecosystem
         </p>
       </footer>
     </div>
